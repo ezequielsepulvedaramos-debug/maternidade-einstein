@@ -247,8 +247,8 @@
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label>Atendente responsável</label>
-        <input type="text" id="f-atendente" placeholder="Seu nome">
+        <label>Concierge responsável</label>
+        <input type="text" id="f-concierge" placeholder="Seu nome">
       </div>
       <div class="form-group" style="grid-column: span 2;">
         <label>Observações</label>
@@ -283,7 +283,7 @@
             <th>Prontuário</th>
             <th>Data visita</th>
             <th>DPP</th>
-            <th>Atendente</th>
+            <th>Concierge</th>
             <th>Status</th>
             <th>Ações</th>
           </tr>
@@ -372,7 +372,7 @@
       <div class="chart-container"><canvas id="chart-conv-mes"></canvas></div>
     </div>
     <div class="chart-box">
-      <div class="chart-title">Atendentes com mais visitas</div>
+      <div class="chart-title">Concierges com mais visitas</div>
       <div class="chart-container"><canvas id="chart-atend"></canvas></div>
     </div>
   </div>
@@ -540,7 +540,7 @@ function addVisita() {
     tel: document.getElementById('f-tel').value.trim(),
     data,
     dpp: document.getElementById('f-dpp').value,
-    atendente: document.getElementById('f-atendente').value.trim(),
+    concierge: document.getElementById('f-concierge').value.trim(),
     obs: document.getElementById('f-obs').value.trim(),
     status: 'pendente',
     dataMatch: null,
@@ -553,7 +553,7 @@ function addVisita() {
   toast('✅ Visita registrada', nome + ' adicionada com sucesso.', 'success');
 
   // Limpar form
-  ['f-nome','f-cpf','f-prontuario','f-tel','f-data','f-dpp','f-atendente','f-obs'].forEach(id => document.getElementById(id).value = '');
+  ['f-nome','f-cpf','f-prontuario','f-tel','f-data','f-dpp','f-concierge','f-obs'].forEach(id => document.getElementById(id).value = '');
 }
 
 function importarPlanilhaVisitas() { document.getElementById('file-visitas').click(); }
@@ -574,11 +574,11 @@ function handleImportVisitas(e) {
       const pron = String(row[2] || '').trim();
       const data = row[3] ? String(row[3]).substring(0,10) : '';
       const dpp = row[4] ? String(row[4]).substring(0,10) : '';
-      const atendente = String(row[5] || '').trim();
+      const concierge = String(row[5] || '').trim();
       if (!nome) return;
       const dup = visitas.find(v => (cpf && cleanCPF(v.cpf) === cpf) || (pron && v.prontuario === pron) || (cleanStr(v.nome) === cleanStr(nome) && v.data === data));
       if (dup) { skipped++; return; }
-      visitas.push({ id: Date.now().toString() + Math.random(), nome, cpf, prontuario: pron, tel: '', data, dpp, atendente, obs: '', status: 'pendente', dataMatch: null, prontuarioSGH: null });
+      visitas.push({ id: Date.now().toString() + Math.random(), nome, cpf, prontuario: pron, tel: '', data, dpp, concierge, obs: '', status: 'pendente', dataMatch: null, prontuarioSGH: null });
       added++;
     });
     save(); renderTabela();
@@ -603,7 +603,7 @@ function renderTabela() {
       <td>${v.prontuario || '—'}</td>
       <td>${v.data || '—'}</td>
       <td>${v.dpp || '—'}</td>
-      <td>${v.atendente || '—'}</td>
+      <td>${v.concierge || '—'}</td>
       <td><span class="pill ${v.status === 'match' ? 'pill-match' : 'pill-pending'}">${v.status === 'match' ? '✓ Internou aqui' : 'Aguardando'}</span></td>
       <td><button class="btn btn-danger btn-sm" onclick="removeVisita('${v.id}')">✕</button></td>
     </tr>
@@ -689,7 +689,7 @@ function cruzarComVisitas(pacientes) {
         dataMatch: v.dataMatch,
         prontuario: p.prontuario,
         diasDesde,
-        atendente: v.atendente
+        concierge: v.concierge
       });
 
       // Mostrar modal se for a primeira ou pop-up toast
@@ -700,7 +700,7 @@ function cruzarComVisitas(pacientes) {
             `<p><strong>Data da visita:</strong> ${v.data || '—'}</p>
              <p><strong>Prontuário SGH:</strong> ${p.prontuario}</p>
              <p><strong>Dias desde a visita:</strong> ${diasDesde !== null ? diasDesde + ' dias' : '—'}</p>
-             <p><strong>Atendente:</strong> ${v.atendente || '—'}</p>`
+             <p><strong>Concierge:</strong> ${v.concierge || '—'}</p>`
           );
         }, 300);
       } else {
@@ -813,7 +813,7 @@ function renderChartConvMes() {
 function renderChartAtend() {
   destroyChart('atend');
   const counts = {};
-  visitas.forEach(v => { if (v.atendente) counts[v.atendente] = (counts[v.atendente] || 0) + 1; });
+  visitas.forEach(v => { if (v.concierge) counts[v.concierge] = (counts[v.concierge] || 0) + 1; });
   const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 6);
   const ctx = document.getElementById('chart-atend').getContext('2d');
   charts['atend'] = new Chart(ctx, {
@@ -835,7 +835,7 @@ function renderTimeline() {
       <div class="timeline-dot match"></div>
       <div class="timeline-content">
         <div class="timeline-name">${v.nome}</div>
-        <div class="timeline-meta">Visita: ${v.data || '—'} &nbsp;·&nbsp; Internada: ${v.dataMatch || '—'} &nbsp;·&nbsp; Prontuário: ${v.prontuarioSGH || '—'} &nbsp;·&nbsp; ${v.atendente || ''}</div>
+        <div class="timeline-meta">Visita: ${v.data || '—'} &nbsp;·&nbsp; Internada: ${v.dataMatch || '—'} &nbsp;·&nbsp; Prontuário: ${v.prontuarioSGH || '—'} &nbsp;·&nbsp; ${v.concierge || ''}</div>
       </div>
     </div>
   `).join('')}</div>`;
@@ -858,7 +858,7 @@ function renderAlertas() {
           Detectada em <strong>${a.dataMatch || '—'}</strong> &nbsp;·&nbsp;
           ${a.diasDesde !== null ? `<strong>${a.diasDesde} dias</strong> após a visita &nbsp;·&nbsp;` : ''}
           Prontuário: ${a.prontuario || '—'} &nbsp;·&nbsp;
-          Atendente: ${a.atendente || '—'}
+          Concierge: ${a.concierge || '—'}
         </div>
       </div>
     </div>
@@ -872,17 +872,17 @@ function exportarExcel() {
 
   // Aba 1: Todas as visitas
   const dados = [
-    ['Nome', 'CPF', 'Prontuário', 'Telefone', 'Data da Visita', 'DPP', 'Atendente', 'Status', 'Data Confirmação', 'Prontuário SGH', 'Observações'],
-    ...visitas.map(v => [v.nome, v.cpf, v.prontuario, v.tel, v.data, v.dpp, v.atendente, v.status === 'match' ? 'Internou aqui' : 'Aguardando', v.dataMatch || '', v.prontuarioSGH || '', v.obs])
+    ['Nome', 'CPF', 'Prontuário', 'Telefone', 'Data da Visita', 'DPP', 'Concierge', 'Status', 'Data Confirmação', 'Prontuário SGH', 'Observações'],
+    ...visitas.map(v => [v.nome, v.cpf, v.prontuario, v.tel, v.data, v.dpp, v.concierge, v.status === 'match' ? 'Internou aqui' : 'Aguardando', v.dataMatch || '', v.prontuarioSGH || '', v.obs])
   ];
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dados), 'Todas as Visitas');
 
   // Aba 2: Conversões
   const conv = [
-    ['Nome', 'CPF', 'Prontuário SGH', 'Data da Visita', 'Data Internação', 'Dias Até Parto', 'Atendente'],
+    ['Nome', 'CPF', 'Prontuário SGH', 'Data da Visita', 'Data Internação', 'Dias Até Parto', 'Concierge'],
     ...visitas.filter(v => v.status === 'match').map(v => {
       const dias = v.data && v.dataMatch ? Math.round((new Date(v.dataMatch) - new Date(v.data)) / 86400000) : '';
-      return [v.nome, v.cpf, v.prontuarioSGH, v.data, v.dataMatch, dias, v.atendente];
+      return [v.nome, v.cpf, v.prontuarioSGH, v.data, v.dataMatch, dias, v.concierge];
     })
   ];
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(conv), 'Conversões');
